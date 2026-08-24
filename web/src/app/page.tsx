@@ -178,11 +178,11 @@ export default function HomePage() {
 
           {/* Search with live suggestions */}
           <div ref={searchRef} className="relative mt-8 max-w-3xl">
-            <form onSubmit={search} className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-2xl sm:flex-row">
+            <form onSubmit={search} className="flex flex-col gap-2.5 rounded-2xl bg-white p-3 shadow-2xl sm:flex-row sm:gap-3 sm:p-4">
               <div className="relative flex-1">
                 <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-gray-400">🔍</span>
                 <input
-                  className="input pl-9"
+                  className="input h-11 pl-9"
                   placeholder="Try “Matina”, “condo”, “near Abreeza”…"
                   value={q}
                   onChange={(e) => {
@@ -192,15 +192,23 @@ export default function HomePage() {
                   onFocus={() => setSuggestOpen(true)}
                 />
               </div>
-              <select className="input sm:w-48" value={category} onChange={(e) => setCategory(e.target.value)}>
-                <option value="">All property types</option>
-                {CATEGORIES.map((c) => (
-                  <option key={c.value} value={c.value}>
-                    {c.label}
-                  </option>
-                ))}
-              </select>
-              <button className="btn-primary sm:px-6">Search</button>
+              {/* on mobile: type + button share one row; on desktop the old layout */}
+              <div className="flex gap-2.5 sm:contents">
+                <select
+                  className="input h-11 min-w-0 flex-1 sm:w-48 sm:flex-none"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  aria-label="Rental type"
+                >
+                  <option value="">All types</option>
+                  {CATEGORIES.map((c) => (
+                    <option key={c.value} value={c.value}>
+                      {c.label}
+                    </option>
+                  ))}
+                </select>
+                <button className="btn-primary h-11 shrink-0 px-5 sm:px-6">Search</button>
+              </div>
             </form>
 
             {suggestOpen && sugg.length > 0 && (
