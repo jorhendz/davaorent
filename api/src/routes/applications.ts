@@ -12,7 +12,7 @@ router.get("/", requireAuth, async (req: AuthRequest, res, next) => {
       where: { OR: [{ renterId: req.user!.id }, { listing: { ownerId: req.user!.id } }] },
       orderBy: { createdAt: "desc" },
       include: {
-        listing: { select: { id: true, title: true, price: true, ownerId: true } },
+        listing: { select: { id: true, title: true, price: true, ownerId: true, category: true } },
         renter: { select: { id: true, name: true, phone: true, email: true, verifiedIdentity: true } },
       },
     });

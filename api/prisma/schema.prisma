@@ -30,6 +30,8 @@ model User {
   reports       Report[]
   notifications Notification[]
   payments      Payment[]
+  rentalsAsOwner  RentalTracking[] @relation("RentalOwner")
+  rentalsAsRenter RentalTracking[] @relation("RentalRenter")
 }
 
 // category: APARTMENT | BOARDING_HOUSE | BEDSPACE | ROOM | CONDO | HOUSE | COMMERCIAL | WAREHOUSE | OFFICE
@@ -83,6 +85,44 @@ model Listing {
   reviews      Review[]
   reports      Report[]
   payments     Payment[]
+  rentals      RentalTracking[]
+}
+
+// Vehicle/equipment rental handover tracking.
+// status: ACTIVE | COMPLETED | CANCELLED — overdue = ACTIVE && dueAt < now
+model RentalTracking {
+  id            String    @id @default(cuid())
+  listingId     String
+  listing       Listing   @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  ownerId       String
+  owner         User      @relation("RentalOwner", fields: [ownerId], references: [id])
+  renterId      String
+  renter        User      @relation("RentalRenter", fields: [renterId], references: [id])
+  applicationId String?
+  status        String    @default("ACTIVE")
+  startAt       DateTime  @default(now())
+  dueAt         DateTime
+  completedAt   DateTime?
+  startOdometer Int?
+  endOdometer   Int?
+  note          String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  points TrackPoint[]
+}
+
+// Renter-shared GPS pings during an active rental
+model TrackPoint {
+  id        String   @id @default(cuid())
+  rentalId  String
+  rental    RentalTracking @relation(fields: [rentalId], references: [id], onDelete: Cascade)
+  lat       Float
+  lng       Float
+  accuracy  Float?
+  createdAt DateTime @default(now())
+
+  @@index([rentalId, createdAt])
 }
 
 model ListingPhoto {

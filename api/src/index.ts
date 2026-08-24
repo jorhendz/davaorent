@@ -13,6 +13,7 @@ import adminRoutes from "./routes/admin";
 import uploadRoutes, { UPLOAD_DIR } from "./routes/uploads";
 import notificationRoutes from "./routes/notifications";
 import paymentRoutes from "./routes/payments";
+import rentalRoutes from "./routes/rentals";
 
 const app = express();
 
@@ -36,6 +37,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/uploads", uploadRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/payments", paymentRoutes);
+app.use("/api/rentals", rentalRoutes);
 
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error(err);

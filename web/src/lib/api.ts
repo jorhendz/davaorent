@@ -70,6 +70,35 @@ export function isPropertyCategory(value: string) {
   return PROPERTY_CATEGORIES.some((c) => c.value === value);
 }
 
+// Categories that use the handover/GPS Rental Tracker
+export const TRACKABLE_CATEGORIES = ["CAR", "MOTORCYCLE", "EQUIPMENT", "EVENT", "APPLIANCE"];
+export function isTrackableCategory(value: string) {
+  return TRACKABLE_CATEGORIES.includes(value);
+}
+
+export type TrackPoint = { id: string; lat: number; lng: number; accuracy?: number | null; createdAt: string };
+
+export type Rental = {
+  id: string;
+  status: string;
+  startAt: string;
+  dueAt: string;
+  completedAt?: string | null;
+  startOdometer?: number | null;
+  endOdometer?: number | null;
+  note?: string | null;
+  applicationId?: string | null;
+  listing: { id: string; title: string; category: string; photos: { url: string }[] };
+  renter: { id: string; name: string; phone?: string | null };
+  owner: { id: string; name: string; phone?: string | null };
+  points?: TrackPoint[];
+  _count?: { points: number };
+};
+
+export function isRentalOverdue(r: { status: string; dueAt: string }) {
+  return r.status === "ACTIVE" && new Date(r.dueAt).getTime() < Date.now();
+}
+
 // "/ month" or "/ day" depending on the listing's rate unit
 export function rateSuffix(l: { priceUnit?: string | null }) {
   return l.priceUnit === "DAY" ? "/ day" : "/ month";

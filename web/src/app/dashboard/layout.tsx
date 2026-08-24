@@ -32,6 +32,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { href: "/dashboard/messages", label: "Messages", icon: "💬" },
     { href: "/dashboard/viewings", label: "Viewings", icon: "📅" },
     { href: "/dashboard/applications", label: "Applications", icon: "📄" },
+    { href: "/dashboard/rentals", label: "Rental Tracker", icon: "🚗" },
     { href: "/dashboard/saved", label: "Saved Rentals", icon: "❤️" },
   ];
 

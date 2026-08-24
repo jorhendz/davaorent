@@ -1,14 +1,36 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { api } from "@/lib/api";
+import { useRouter } from "next/navigation";
+import { api, isTrackableCategory } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import StatusBadge from "@/components/StatusBadge";
 
 export default function ApplicationsPage() {
   const { user } = useAuth();
+  const router = useRouter();
   const [applications, setApplications] = useState<any[] | null>(null);
   const [error, setError] = useState("");
+  const [startingId, setStartingId] = useState("");
+  const [dueAt, setDueAt] = useState("");
+  const [startOdo, setStartOdo] = useState("");
+
+  async function startRental(applicationId: string) {
+    setError("");
+    try {
+      await api("/rentals", {
+        method: "POST",
+        body: JSON.stringify({
+          applicationId,
+          dueAt: new Date(dueAt).toISOString(),
+          ...(startOdo ? { startOdometer: Number(startOdo) } : {}),
+        }),
+      });
+      router.push("/dashboard/rentals");
+    } catch (e: any) {
+      setError(e.message);
+    }
+  }
 
   useEffect(() => {
     if (user) load();
@@ -83,11 +105,45 @@ export default function ApplicationsPage() {
                         <button className="btn-secondary" onClick={() => update(a.id, "DECLINED")}>Decline</button>
                       </>
                     )}
+                    {owner && a.status === "APPROVED" && isTrackableCategory(a.listing.category) && (
+                      <button
+                        className="btn-primary"
+                        onClick={() => {
+                          setStartingId(startingId === a.id ? "" : a.id);
+                          const d = new Date(Date.now() + 24 * 60 * 60 * 1000);
+                          d.setMinutes(0, 0, 0);
+                          setDueAt(d.toISOString().slice(0, 16));
+                        }}
+                      >
+                        🚗 Start Rental Tracking
+                      </button>
+                    )}
                     {!owner && actionable && (
                       <button className="btn-secondary" onClick={() => update(a.id, "WITHDRAWN")}>Withdraw</button>
                     )}
                   </div>
                 </div>
+
+                {/* start-rental panel */}
+                {owner && startingId === a.id && (
+                  <div className="mt-3 flex flex-wrap items-end gap-3 rounded-xl border border-brand-100 bg-brand-50/60 p-4">
+                    <div>
+                      <label className="label">Due back</label>
+                      <input type="datetime-local" className="input" value={dueAt} onChange={(e) => setDueAt(e.target.value)} />
+                    </div>
+                    <div>
+                      <label className="label">Odometer out (km, optional)</label>
+                      <input type="number" min={0} className="input w-36" value={startOdo} onChange={(e) => setStartOdo(e.target.value)} placeholder="—" />
+                    </div>
+                    <button className="btn-primary" disabled={!dueAt} onClick={() => startRental(a.id)}>
+                      Start Tracking
+                    </button>
+                    <p className="basis-full text-xs text-gray-500">
+                      Marks the listing as Occupied and opens a tracked rental — the renter can share their live trip
+                      location with you.
+                    </p>
+                  </div>
+                )}
               </div>
             );
           })}
