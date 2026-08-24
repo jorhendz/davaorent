@@ -8,17 +8,20 @@ import { AuthRequest, requireAuth } from "../middleware/auth";
 const router = Router();
 
 // Storage strategy: Vercel Blob when a token is configured (serverless-safe),
-// local disk otherwise (dev / traditional hosts).
+// local disk otherwise (dev / traditional hosts). If the disk is read-only and
+// no blob token exists, fall back to memory storage and reply 501.
 const useBlob = !!process.env.BLOB_READ_WRITE_TOKEN;
 
 export const UPLOAD_DIR = path.resolve(__dirname, "../../uploads");
-if (!useBlob) {
+const canUseDisk = (() => {
+  if (useBlob) return false;
   try {
     if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+    return true;
   } catch {
-    // read-only filesystem (serverless without blob token) — uploads will 501 below
+    return false; // read-only filesystem (serverless without blob token)
   }
-}
+})();
 
 const ALLOWED = new Map([
   ["image/jpeg", ".jpg"],
@@ -31,12 +34,12 @@ const filename = (mimetype: string) =>
   `${Date.now()}-${crypto.randomBytes(6).toString("hex")}${ALLOWED.get(mimetype) || ".jpg"}`;
 
 const upload = multer({
-  storage: useBlob
-    ? multer.memoryStorage()
-    : multer.diskStorage({
+  storage: canUseDisk
+    ? multer.diskStorage({
         destination: UPLOAD_DIR,
         filename: (_req, file, cb) => cb(null, filename(file.mimetype)),
-      }),
+      })
+    : multer.memoryStorage(),
   limits: { fileSize: 8 * 1024 * 1024, files: 10 },
   fileFilter: (_req, file, cb) => {
     if (ALLOWED.has(file.mimetype)) cb(null, true);
@@ -65,7 +68,7 @@ router.post("/", requireAuth, (req: AuthRequest, res) => {
         return res.status(201).json({ urls });
       }
 
-      if (!fs.existsSync(UPLOAD_DIR)) {
+      if (!canUseDisk) {
         return res.status(501).json({
           error: "Uploads are not configured on this server (set BLOB_READ_WRITE_TOKEN or use a host with a writable disk).",
         });
