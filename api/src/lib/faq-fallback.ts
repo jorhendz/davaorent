@@ -1,11 +1,15 @@
 // Keyword-matched answers used when ANTHROPIC_API_KEY is not configured, or when
 // the API call fails. Keeps the chat widget useful instead of dead.
 
-type Faq = { keywords: string[]; answer: string };
+// `weak` keywords are generic question phrases ("how much"). They nudge a topic
+// but must never outrank a specific term like "deposit" or "viewing".
+type Faq = { keywords: string[]; weak?: string[]; answer: string };
+const WEAK_WEIGHT = 2;
 
 const FAQS: Faq[] = [
   {
-    keywords: ["free", "libre", "cost to use", "bayad ba", "charge"],
+    keywords: ["free", "libre", "cost to use", "bayad ba", "charge", "pricing"],
+    weak: ["how much", "magkano", "fee", "cost"],
     answer:
       "DavaoRent is 100% free for renters — searching, messaging owners, requesting viewings and applying all cost nothing. Listing is also free for owners; only optional Featured promotion is paid (₱199 for 7 days, ₱349 for 15, ₱599 for 30).",
   },
@@ -15,7 +19,10 @@ const FAQS: Faq[] = [
       "Featured listings appear at the top of search with a Featured badge and homepage exposure. Plans: ₱199 / 7 days, ₱349 / 15 days, ₱599 / 30 days. Owners can buy one from Dashboard → Promotions.",
   },
   {
-    keywords: ["how do i list", "post a", "add listing", "paano mag", "magpa-rent", "i list my", "rent out", "advertise my"],
+    keywords: [
+      "how do i list", "post a", "add listing", "paano mag", "magpa-rent", "rent out", "advertise my",
+      "list my", "cost to list", "listing fee", "list a property", "list my property", "become an owner",
+    ],
     answer:
       "Log in as an Owner or Agency, then go to Dashboard → Add Listing. The guided form takes about 5 minutes: basics and price, location, details and features, then photos. Submit it and our team reviews it — usually live within 24 hours. Listing is free.",
   },
@@ -97,11 +104,13 @@ export function faqAnswer(question: string): string {
     return "Hello! 👋 I'm Dara, the DavaoRent assistant. I can help with finding rentals, listing your own property or vehicle, viewings, applications, and staying safe from scams. What do you need?";
   }
 
-  // Best match = most keyword hits, longest keyword wins ties.
+  // Best match = highest score; specific terms score by length, generic phrases
+  // contribute only WEAK_WEIGHT so they can break ties but not win outright.
   let best: { faq: Faq; score: number } | null = null;
   for (const faq of FAQS) {
     let score = 0;
     for (const k of faq.keywords) if (q.includes(k)) score += k.length;
+    for (const k of faq.weak ?? []) if (q.includes(k)) score += WEAK_WEIGHT;
     if (score > 0 && (!best || score > best.score)) best = { faq, score };
   }
 
