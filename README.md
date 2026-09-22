@@ -54,6 +54,7 @@ All endpoints are under `http://localhost:4000/api`:
 - `GET /listings/compare?ids=…` (side-by-side compare, up to 4), `POST /listings/:id/renew` (30-day renewal)
 - `GET /notifications`, `POST /notifications/read-all`, `PATCH /notifications/:id/read`
 - `GET /payments/plans`, `POST /payments/checkout` (sandbox featured-listing purchase), `GET /payments`
+- `POST /chat` (support assistant; Claude-powered with live-listing tools when `ANTHROPIC_API_KEY` is set, keyword FAQ otherwise), `GET /chat/health`
 - Admin: `GET|PATCH /admin/listings`, `PATCH /admin/listings/:id/verify`, `GET|PATCH /admin/reports`, `GET /admin/users`, `PATCH /admin/users/:id/verify`, `GET /admin/stats`
 
 ## Also implemented (future-phase systems)

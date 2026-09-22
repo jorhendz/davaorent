@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
 import Navbar from "@/components/Navbar";
+import ChatWidget from "@/components/ChatWidget";
 
 export const metadata: Metadata = {
   title: "DavaoRent — Find Your Next Space in Davao",
@@ -16,6 +17,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AuthProvider>
           <Navbar />
           <main>{children}</main>
+          <ChatWidget />
           <footer className="relative mt-20 overflow-hidden rounded-t-[2.5rem] bg-brand-900 text-brand-100">
             {/* glow accents */}
             <span aria-hidden className="pointer-events-none absolute -top-16 right-[15%] h-56 w-56 rounded-full bg-teal-500/15 blur-3xl" />

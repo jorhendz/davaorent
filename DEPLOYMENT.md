@@ -31,6 +31,7 @@ uses Postgres + Vercel Blob via environment variables only — no code changes.
    | `JWT_SECRET` | a long random string |
    | `CORS_ORIGIN` | your web URL(s), e.g. `https://davaorent-web.vercel.app` (add after step 2 if you don't know it yet) |
    | `BLOB_READ_WRITE_TOKEN` | from Vercel → Storage → Blob → Create store → connect to this project |
+   | `ANTHROPIC_API_KEY` | *optional* — turns the chat assistant from FAQ mode into a Claude-powered agent. Get one at console.anthropic.com |
 
 4. Deploy. The build runs `vercel-build`, which generates the Prisma client
    against `prisma/schema.postgres.prisma` and pushes the schema to Postgres.

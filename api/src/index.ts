@@ -14,6 +14,7 @@ import uploadRoutes, { UPLOAD_DIR } from "./routes/uploads";
 import notificationRoutes from "./routes/notifications";
 import paymentRoutes from "./routes/payments";
 import rentalRoutes from "./routes/rentals";
+import chatRoutes from "./routes/chat";
 
 const app = express();
 
@@ -38,9 +39,14 @@ app.use("/api/uploads", uploadRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/rentals", rentalRoutes);
+app.use("/api/chat", chatRoutes);
 
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error(err);
+  // Schema validation failures are client errors, not server errors.
+  if (err?.name === "ZodError") {
+    return res.status(400).json({ error: "Invalid request", details: err.issues ?? err.errors });
+  }
   res.status(err.status || 500).json({ error: err.message || "Internal server error" });
 });
 
